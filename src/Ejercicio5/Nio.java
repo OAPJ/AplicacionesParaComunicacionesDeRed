@@ -13,6 +13,8 @@ import java.nio.channels.FileChannel;
 /**
  *
  * @author ovall
+ * 
+ * Leer archivos con Cahnenel(NIO)
  */
 public class Nio {
     public static void main(String[] args){
