@@ -17,9 +17,13 @@ import java.nio.file.StandardOpenOption;
 import java.util.EnumSet;
 
 /**
- *
+ * Nombre: Juan Antonio Ovalle PAtiño
+ * Nombre del programa: Practica 3: Envío de archivos con sockets de flujo en modo no bloqueante
+ * Descripción: EL cliente manda un archivo al servidor con sokets no bloqueantes
+ * Fecha: 20 / Febrero / 2019
  * @author ovall
  */
+
 public class ServidorNIO {
     private ServerSocketChannel ssc;
     private SocketChannel sc;
@@ -35,6 +39,8 @@ public class ServidorNIO {
             ssc = ServerSocketChannel.open();
             //Ligar al puerto
             ssc.socket().bind(new InetSocketAddress(puerto));
+            //Congigurar el servidor en modo no bloqueante
+            ssc.configureBlocking(false);
         } catch (IOException e) {
             e.printStackTrace();
         }

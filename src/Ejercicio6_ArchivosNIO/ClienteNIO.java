@@ -14,9 +14,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- *
+ * Nombre: Juan Antonio Ovalle PAtiño
+ * Nombre del programa: Practica 3: Envío de archivos con sockets de flujo en modo no bloqueante
+ * Descripción: EL cliente manda un archivo al servidor con sokets no bloqueantes
+ * Fecha: 20 / Febrero / 2019
  * @author ovall
  */
+
 public class ClienteNIO {
     private SocketChannel sc;
     private FileChannel file;
