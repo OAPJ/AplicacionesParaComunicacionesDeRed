@@ -17,7 +17,11 @@ import java.net.InetAddress;
 import javax.swing.JFileChooser;
 
 /**
- *
+ * Nombre: Miguel Algen Cervantes Garcias
+ *         Juan Antonio Ovalle Patiño
+ * Tema: TFTP Cliente
+ * Descripcion: Enciar y recivir archivos del servidor con TFTP
+ * Fecha: 11 / Marzo / 2019
  * @author ovall
  */
 public class Cliente {
