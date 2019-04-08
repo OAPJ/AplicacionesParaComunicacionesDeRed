@@ -6,192 +6,195 @@
 package TFTP;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.channels.DatagramChannel;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.Iterator;
-import java.util.Set;
+import javax.swing.JFileChooser;
 
 /**
  *
  * @author ovall
  */
 public class Cliente {
+         /*
+	 * TFTP  RFC 1350 
+         * opcode - operation
+         * 1 - Read request (RRQ) 
+	 * 2 - Write request (WRQ) 
+         * 3 - Data (DATA) 
+         * 4 - Acknowledgment (ACK) 
+         * 5 - Error (ERROR)
+	 */
+	private static final String TFTP_SERVER_IP = "192.168.0.13";
+	private static final int TFTP_DEFAULT_PORT = 4970;
+	// TFTP opcode
+	private static final byte OP_RRQ = 1;
+        private static final byte OP_WRQ = 2;
+	private static final byte OP_DATAPACKET = 3;
+	private static final byte OP_ACK = 4;
+	private static final byte OP_ERROR = 5;
+        // el paquete de datos tiene: 2 byte para opcode, 2 bytes para num_paq y 512 bytes para los datos
+	private final static int PACKET_SIZE = 516;
+	private DatagramSocket datagramSocket = null;
+	private InetAddress inetAddress = null;
+	private byte[] rrqBuffer;
+	private byte[] buffer;
+	private DatagramPacket salida;
+	private DatagramPacket entrada;
+        //la mayoria de servidores tftp usan este mÃ©todo para indicar la  obtencion de archivos
+        // tftp IP
+        // tftp> get archivo.pdf
+        // tftp> put otroarchivo.pdf   --- para subir un archivo
+	private void get(String archivo) throws IOException {
+		// Paso0: prepara para la comunicacion
+		inetAddress = InetAddress.getByName(TFTP_SERVER_IP);
+		datagramSocket = new DatagramSocket();
+		rrqBuffer = crearRequest(OP_RRQ, archivo, "octet");
+		salida = new DatagramPacket(rrqBuffer, rrqBuffer.length, inetAddress, TFTP_DEFAULT_PORT);
 
-    private String TFTP_SERVER_ADDRESS = "192.168.16.246";
-    private int TFTP_SERVER_PORT = 4970;
+		// Paso 1: enviar peticion RRQ al servidor TFTP para bajar un archivo
+		datagramSocket.send(salida);
 
-    private Selector selector;
-    private DatagramChannel datagramChannel;
-    private SocketAddress socketAddress;
+		// Paso 2: recibir archivo del servidor TFTP 
+		ByteArrayOutputStream byteOutOS = recibeArchivo();
 
-    private final byte OP_RRQ = 1;
-    private final byte OP_WRQ = 2;
-    private final byte OP_DATAPACKET = 3;
-    private final byte OP_ACK = 4;
-    private final byte OP_ERROR = 5;
-    private final int PACKET_SIZE = 516;
-    private byte[] rrqBuffer;
-    private byte[] buffer;
-
-    public void get(String file) throws IOException {
-        synchronized(this){
-        registerAndRequest(file);
-        leerFile();
-        }
-    }
-    
-    private void put (String file) throws IOException {
-        selector = Selector.open();// se crea y se abre el selector
-            socketAddress = new InetSocketAddress(TFTP_SERVER_ADDRESS,TFTP_SERVER_PORT);
-            datagramChannel = DatagramChannel.open();
-            datagramChannel.configureBlocking(false);
-            SelectionKey selectionKey = datagramChannel.register(selector,SelectionKey.OP_READ);
-            selectionKey.attach(file);
-            sendRequest(file, datagramChannel);
+		// Paso 3: escribir el archivo en la ubicacion local
+		writeFile(byteOutOS, archivo);
 	}
-    // crear y registrar el channel de envÃ­o de peticion de lectura
-    private void registerAndRequest(String file) throws IOException {
-        selector = Selector.open();// se crea y se abre el selector
-        socketAddress = new InetSocketAddress(TFTP_SERVER_ADDRESS,TFTP_SERVER_PORT);
-        datagramChannel = DatagramChannel.open();
-        datagramChannel.configureBlocking(false);
-        SelectionKey selectionKey = datagramChannel.register(selector,SelectionKey.OP_READ);
-        selectionKey.attach(file);
-        sendRequest(file, datagramChannel);
-
-    }
-    
-    private void sendRequest(String fileName, DatagramChannel dChannel)throws IOException {
-        String mode = "octet";
-        ByteBuffer rrqByteBuffer = crearRequest(OP_RRQ, fileName, mode);
-        System.out.println("Enviando peticion al servidor.");
-        dChannel.send(rrqByteBuffer, socketAddress);
-    }
-    
-    private ByteBuffer crearRequest(final byte opCode, final String fileName,final String mode) {
-        int rrqByteLength = 2 + fileName.length() + 1 + mode.length() + 1;
-        byte[] rrqByteArray = new byte[rrqByteLength];
-        int position = 0;
-        rrqByteArray[position] = 0;
-        position++;
-        rrqByteArray[position] = opCode;
-        position++;
-        for (int i = 0; i < fileName.length(); i++) {
-            rrqByteArray[position] = (byte) fileName.charAt(i);
-            position++;
-        }
-        rrqByteArray[position] = 0;
-        position++;
-        for (int i = 0; i < mode.length(); i++) {
-            rrqByteArray[position] = (byte) mode.charAt(i);
-            position++;
-        }
-        rrqByteArray[position] = 0;
-        ByteBuffer byteBuffer = ByteBuffer.wrap(rrqByteArray);
-        return byteBuffer;
-    }
-    
-    private void leerFile() throws IOException {
-        int readyChannels = selector.select();
-        if (readyChannels == 0)
-            System.out.println("No hay channels disponibles");
         
-        Set<SelectionKey> selectedKeys = selector.selectedKeys();
-        Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
-        while (keyIterator.hasNext()) {
-            SelectionKey key = keyIterator.next();
-            if (key.isAcceptable()) {
-                System.out.println("conexion acceptada: " + key.channel());
-            } else if (key.isConnectable()) {
-                System.out.println("conexion establecida: ");
-            } else if (key.isReadable()) {
-                System.out.println("Channel listo para lectura: " );
-                recibirFile((DatagramChannel) key.channel(),(String) key.attachment());
-                System.out.println("Recibido "+(String) key.attachment());
-            } else if (key.isWritable()) {
-                System.out.println("Channel listo para escritura: " );
-            }
-            keyIterator.remove();
+        private void put (String archivo) throws IOException {
+            inetAddress = InetAddress.getByName(TFTP_SERVER_IP);
+            datagramSocket = new DatagramSocket();
+            rrqBuffer = crearRequest( OP_WRQ, archivo, "octet");
+            entrada = new DatagramPacket(rrqBuffer, rrqBuffer.length, inetAddress, TFTP_DEFAULT_PORT);
+            datagramSocket.send(entrada);
+            ByteArrayOutputStream byteOutOS = recibeArchivo();
+            writeFile(byteOutOS, archivo);
+	}
+
+        // recibir el archivo, paquete por paquete
+	private ByteArrayOutputStream recibeArchivo() throws IOException {
+		ByteArrayOutputStream byteOutOS = new ByteArrayOutputStream();
+		int block = 1;
+		do {
+			System.out.println("Contador de paquete TFTP: " + block);
+			block++;
+			buffer = new byte[PACKET_SIZE];
+			entrada = new DatagramPacket(buffer,
+					buffer.length, inetAddress,
+					datagramSocket.getLocalPort());
+			
+			//Paso 2.1: recibe paquete del servidor TFTP 
+			datagramSocket.receive(entrada);
+
+			// Obtener los primeros 4 caracteres  del paquete tftp para conocer la opc-code
+			byte[] opCode = { buffer[0], buffer[1] };
+
+			if (opCode[1] == OP_ERROR) {
+				reportarError();
+			} else if (opCode[1] == OP_DATAPACKET) {
+				// Verificar el nÃºmero de bloque del paquete
+				byte[] blockNumber = { buffer[2], buffer[3] };
+
+				DataOutputStream dos = new DataOutputStream(byteOutOS);
+				dos.write(entrada.getData(), 4,
+						entrada.getLength() - 4);
+
+				//Paso 2.2: mandar ACK al servidor TFTP 
+				enviarACK(blockNumber);
+			}
+
+		} while (!isLastPacket(entrada));
+		return byteOutOS;
+	}
+
+	private void enviarACK(byte[] blockNumber) {
+                // crear paquete ACK
+		byte[] ACK = { 0, OP_ACK, blockNumber[0], blockNumber[1] };
+		DatagramPacket ack = new DatagramPacket(ACK, ACK.length, inetAddress,
+				entrada.getPort());
+		try {
+			datagramSocket.send(ack);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void reportarError() {
+		String errorCode = new String(buffer, 3, 1);
+		String errorText = new String(buffer, 4,
+				entrada.getLength() - 4);
+		System.err.println("Error: " + errorCode + " " + errorText);
+	}
+
+        // escribe el contenido del servidor en el archivo local
+	private void writeFile(ByteArrayOutputStream baoStream, String fileName) {
+		try {
+			OutputStream outputStream = new FileOutputStream(fileName);
+			baoStream.writeTo(outputStream);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/*
+	 * Los paquete de datos de TFTP son de maximo 512 bytes por lo tanto el Ãºltimo
+	 * debe ser menor que 512 bytes
+	 */
+	private boolean isLastPacket(DatagramPacket datagramPacket) {
+		if (datagramPacket.getLength() < 512)
+			return true;
+		else
+			return false;
+	}
+
+	/*
+	 * RRQ / WRQ packet format
+	 * 
+	 * 2 bytes - Opcode; string - filename; 1 byte - 0; string - mode; 1 byte - 0;
+	 */
+	private byte[] crearRequest( byte opCode,  String archivo, String mode) {
+		// se define el tamaño del paquete
+		int rrqByteLength = 2 + archivo.length() + 1 + mode.length() + 1;
+		byte[] rrqBuffer = new byte[rrqByteLength];
+
+		int position = 0;
+		rrqBuffer[position] = 0;
+		position++;
+		rrqBuffer[position] = opCode;
+		position++;
+		for (int i = 0; i < archivo.length(); i++) {
+			rrqBuffer[position] = (byte) archivo.charAt(i);
+			position++;
+		}
+		rrqBuffer[position] = 0;
+		position++;
+		for (int i = 0; i < mode.length(); i++) {
+			rrqBuffer[position] = (byte) mode.charAt(i);
+			position++;
+		}
+		rrqBuffer[position] = 0;
+		return rrqBuffer;
+	}
+        
+        public File openFile(){
+            JFileChooser selector = new JFileChooser();
+            selector.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            int res = selector.showOpenDialog(null);
+            if (res == 1 )
+                return null;
+            File archivo = selector.getSelectedFile();
+            return selector.getSelectedFile();
         }
-    }
-    
-    private void recibirFile(DatagramChannel dc, String fileName)throws IOException {
-        ByteBuffer buff = null;
-        do {
-            buff = ByteBuffer.allocateDirect(PACKET_SIZE);
-            //para enviar al servidor
-            SocketAddress remoteSocketAddress = dc.receive(buff);
-            // Leer la OPCODE
-            byte[] opCode = {buff.get(0), buff.get(1)};
-            if (opCode[1] == OP_ERROR) {
-                System.out.println("ERROR! al recibir el paquete");
-            } else if (opCode[1] == OP_DATAPACKET) {
-                byte[] packetBlockNumber = {buff.get(2), buff.get(3)};
-                // leer el paquete recibido
-                leerPaquete(buff, fileName);
-                // enviar ACK por el paquete recibido
-                enviarACK(packetBlockNumber, remoteSocketAddress, dc);
-            }
-        } while (!isLastPacket(buff));
-    }
-    
-    private byte[] leerPaquete(ByteBuffer dst, String fileName)throws IOException {
-        byte fileContent[] = new byte[PACKET_SIZE];
-        dst.flip(); // prepara al buffer para lectura
-        int m = 0, counter = 0;
-        while (dst.hasRemaining()) {
-            // 2 bytes OPCODE
-            // 2 bytes num paq
-            if (counter > 3) {
-                fileContent[m] = dst.get();
-                m++;// para sacar solo el contenido (data) del paquete
-            } else {
-                dst.get();// lee pero no hace nada con los primeros 4 datos
-            }
-            counter++;
-        }
-        Path filePath = Paths.get(fileName);
-        byte[] escribir = new byte[m];
-        System.arraycopy(fileContent, 0, escribir, 0, m);
-        escrirbiraFile(filePath, escribir);
-        return fileContent;
-    }
-    
-    private void escrirbiraFile(Path filePath, byte[] escribir) throws IOException {
-        if (Files.exists(filePath))
-            Files.write(filePath, escribir, StandardOpenOption.APPEND);
-        else
-            Files.write(filePath, escribir, StandardOpenOption.CREATE);
-    }
-    
-    private boolean isLastPacket(ByteBuffer bb) {
-        if (bb.limit() < 512)
-            return true;
-        else
-            return false;
-    }
-    
-    private void enviarACK(byte[] blockNumber,SocketAddress socketAddress, DatagramChannel dc) throws IOException {
-        byte[] ACK = {0, OP_ACK, blockNumber[0], blockNumber[1]};
-        dc.send(ByteBuffer.wrap(ACK), socketAddress);
-    }
 
     public static void main(String args[]) throws Exception {
         Cliente tFTPClientNio = new Cliente();
-        String files = "DNS.pdf";
-        //tFTPClientNio.get(files);
-        tFTPClientNio.put("DNS.pdf");
+        //tFTPClientNio.get("DNS.pdf");
+        tFTPClientNio.put("casaMickey.jpg");
     }
 }
