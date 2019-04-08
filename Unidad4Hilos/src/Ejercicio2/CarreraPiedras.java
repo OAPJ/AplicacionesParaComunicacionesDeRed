@@ -17,12 +17,14 @@ public class CarreraPiedras extends javax.swing.JFrame implements Runnable{
     Roca r, r2, r3, r4;
     Thread t, t2, t3, t4, t5;
     int x, x2, x3, x4, y, y2, y3, y4;
+    String posiciones[];
     /**
      * Creates new form CarreraPiedras
      */
     public CarreraPiedras() {
         initComponents();
         this.setLocationRelativeTo(null);
+        posiciones = new String[4];
         x = jLabel1.getX();
         x2 = jLabel2.getX();
         x3 = jLabel3.getX();
@@ -33,16 +35,20 @@ public class CarreraPiedras extends javax.swing.JFrame implements Runnable{
         y4 = jLabel4.getY();
         Image in = new ImageIcon("Caballo.jpg").getImage().getScaledInstance(100, 100, BufferedImage.TYPE_INT_RGB);
         jLabel1.setIcon(new ImageIcon(in));
+        jLabel1.setName("Caballo 1");
         Image in2 = new ImageIcon("Caballo2.jpg").getImage().getScaledInstance(100, 100, BufferedImage.TYPE_INT_RGB);
         jLabel2.setIcon(new ImageIcon(in2));
+        jLabel2.setName("Caballo 2");
         Image in3 = new ImageIcon("Caballo3.jpg").getImage().getScaledInstance(100, 100, BufferedImage.TYPE_INT_RGB);
         jLabel3.setIcon(new ImageIcon(in3));
+        jLabel3.setName("Caballo 3");
         Image in4 = new ImageIcon("Caballo4.jpg").getImage().getScaledInstance(100, 100, BufferedImage.TYPE_INT_RGB);
         jLabel4.setIcon(new ImageIcon(in4));
-        r = new Roca(jLabel1, jLabel1.getY());
-        r2 = new Roca(jLabel2, jLabel2.getY());
-        r3 = new Roca(jLabel3, jLabel3.getY());
-        r4 = new Roca(jLabel4, jLabel4.getY());
+        jLabel4.setName("Caballo 4");
+        r = new Roca(jLabel1, jLabel1.getY(), posiciones);
+        r2 = new Roca(jLabel2, jLabel2.getY(), posiciones);
+        r3 = new Roca(jLabel3, jLabel3.getY(), posiciones);
+        r4 = new Roca(jLabel4, jLabel4.getY(), posiciones);
     }
     
     public void run(){
@@ -87,31 +93,31 @@ public class CarreraPiedras extends javax.swing.JFrame implements Runnable{
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(40, 40, 40)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE)
-                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(40, 40, 40)
-                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(20, 20, 20))
-            .addGroup(layout.createSequentialGroup()
                 .addGap(227, 227, 227)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(244, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(24, 24, 24)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(40, 40, 40)
+                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 48, Short.MAX_VALUE)
+                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(40, 40, 40)
+                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(24, 24, 24))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(400, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(34, 34, 34)
                 .addComponent(jButton1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)

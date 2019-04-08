@@ -7,6 +7,7 @@ package Ejercicio2;
 
 import java.util.Random;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -16,11 +17,14 @@ public class Roca extends JLabel implements Runnable {
     private JLabel jl;
     private int distancia;
     private int x, i;
+    private String posiciones[], nombre;
     
-    public Roca(JLabel jl, int d){
+    public Roca(JLabel jl, int d, String[] arr){
         this.jl = jl;
         x = jl.getX();
         this.distancia = d;
+        posiciones = arr;
+        nombre = jl.getName();
     }
     
     public void run(){
@@ -33,7 +37,17 @@ public class Roca extends JLabel implements Runnable {
                 ex.printStackTrace();
             }
         }
-        i = -1;
+        
+        synchronized (posiciones){
+            for(i=0; i<4; i++){
+                if(posiciones[i] == null){
+                    posiciones[i] = this.nombre;
+                    JOptionPane.showMessageDialog(null, (i+1)+":"+nombre);
+                    break;
+                }
+            }
+        }
+        
         
     }
     public int getI(){
