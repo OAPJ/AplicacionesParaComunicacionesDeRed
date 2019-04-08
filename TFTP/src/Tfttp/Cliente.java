@@ -35,7 +35,7 @@ public class Cliente {
          * 5 - Error (ERROR)
 	 */
 
-	private static final String TFTP_SERVER_IP = "192.168.0.18";
+	private static final String TFTP_SERVER_IP = "192.168.0.13";
 	private static final int TFTP_DEFAULT_PORT = 69;
 
 	// TFTP opcode
@@ -202,7 +202,7 @@ public class Cliente {
         }
         
         public static void main(String[] args) throws IOException {
-		String fileName = "casaMickey2.jpg";
+		String fileName = "time.jpg";
 		Cliente tFTPClient = new Cliente();
 		//tFTPClient.get(fileName);
                 tFTPClient.put(fileName);
