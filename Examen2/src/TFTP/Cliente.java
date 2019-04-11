@@ -30,7 +30,7 @@ public class Cliente {
          * 4 - Acknowledgment (ACK) 
          * 5 - Error (ERROR)
 	 */
-	private static final String TFTP_SERVER_IP = "192.168.0.13";
+	private static final String TFTP_SERVER_IP = "127.0.0.1";
 	private static final int TFTP_DEFAULT_PORT = 4970;
 	// TFTP opcode
 	private static final byte OP_RRQ = 1;

@@ -103,7 +103,7 @@ public class Servidor {
 				}
 			}.start();
 		}
-	} // start
+	}
 
         private InetSocketAddress receiveFrom(DatagramSocket socket, byte[] buf) {
 		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
@@ -283,9 +283,11 @@ public class Servidor {
             try {
             	System.out.println("sending ack for block: " + block);
             	sendSocket.send(sendAck);
+                System.out.println("A");
                 sendSocket.setSoTimeout(((int) Math.pow(2, retryCount++))*1000);
+                System.out.println("B");
                 sendSocket.receive(receiver);
-                
+                System.out.println("c");
                 short blockNum = getData(receiver);
                 System.out.println(blockNum + " " + block);
                 if (blockNum == block) {
