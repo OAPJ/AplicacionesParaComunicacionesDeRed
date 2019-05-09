@@ -29,7 +29,7 @@ calculadora_prog_1(char *host, int op, int a, int b)
 		clnt_perror (clnt, "call failed");
 	}
 	printf("Resultado: %.2f\n", *result_1);
-	printf("Ingrese un dato para continuar\n");
+	printf("Ingrese un numero para continuar\n");
 	int al;
 	scanf("%d", &al);
 #ifndef	DEBUG
