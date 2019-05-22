@@ -53,4 +53,9 @@ public class Servidor extends UnicastRemoteObject implements InterfazServidor{
         } catch (Exception e) {
         }
     }
+
+    @Override
+    public void elimarCliente(InterfazCliente c) throws RemoteException {
+        clientes.remove(c);
+    }
 }

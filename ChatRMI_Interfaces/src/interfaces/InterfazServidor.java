@@ -17,4 +17,5 @@ public interface InterfazServidor extends Remote{
     public void registrar(InterfazCliente c) throws RemoteException;
     public void publicar(String msg) throws RemoteException;
     public Vector obtenerClientesActivos() throws RemoteException;
+    public void elimarCliente(InterfazCliente c) throws RemoteException;
 }

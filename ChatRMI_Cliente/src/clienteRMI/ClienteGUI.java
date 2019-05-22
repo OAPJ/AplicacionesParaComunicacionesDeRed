@@ -12,8 +12,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 
@@ -30,11 +28,11 @@ public class ClienteGUI extends javax.swing.JFrame {
     public ClienteGUI() {
         initComponents();
         this.setLocationRelativeTo(null);
-        jTextArea1.setEditable(false);
+        jTextArea1.setEnabled(false);
         jButton2.setEnabled(false);
-        jTextField3.setEditable(false);
+        jTextField3.setEnabled(false);
     }
-
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -74,6 +72,12 @@ public class ClienteGUI extends javax.swing.JFrame {
         jScrollPane1.setViewportView(jTextArea1);
 
         jScrollPane2.setViewportView(jList1);
+
+        jTextField3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField3ActionPerformed(evt);
+            }
+        });
 
         jButton2.setText("Enviar");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
@@ -153,40 +157,43 @@ public class ClienteGUI extends javax.swing.JFrame {
                 ex.printStackTrace();
             }
             
-            jTextField1.setEditable(false);
-            jTextField2.setEditable(false);
-            jTextArea1.setEditable(true);
+            jTextField1.setEnabled(false);
+            jTextField2.setEnabled(false);
+            jTextArea1.setEnabled(true);
             jButton2.setEnabled(true);
-            jTextField3.setEditable(true);
+            jTextField3.setEnabled(true);
             jButton1.setText("Desconectar");
         }
         else{
+            try {
+                s.elimarCliente(c);
+            } catch (RemoteException ex) {
+                ex.printStackTrace();
+            }
             actualizarLista(null);
-            jTextField1.setEditable(true);
-            jTextField2.setEditable(true);
-            jTextArea1.setEditable(false);
+            jTextArea1.setText("");
+            jTextField1.setEnabled(true);
+            jTextField2.setEnabled(true);
+            jTextArea1.setEnabled(false);
             jButton2.setEnabled(false);
-            jTextField3.setEditable(false);
+            jTextField3.setEnabled(false);
             jButton1.setText("Conectar");
         }
         
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        if(!jTextField3.getText().isEmpty()){
-            try {
-                String aux = c.getNombre() +" dice :"+jTextField3.getText();
-                s.publicar(aux);
-            } catch (RemoteException ex) {
-                ex.printStackTrace();
-            }
-            
-        }
+        enviar();
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jTextField3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField3ActionPerformed
+        // TODO add your handling code here:
+        enviar();
+    }//GEN-LAST:event_jTextField3ActionPerformed
     
     private void actualizarLista(Vector v) {
         DefaultListModel m = new DefaultListModel();
-        if(v  != null){
+        if(v  != null)
             for(int i=0; i<v.size(); i++){
                 try {
                     String usr = ((InterfazCliente)v.get(i)).getNombre();
@@ -195,8 +202,22 @@ public class ClienteGUI extends javax.swing.JFrame {
                     ex.printStackTrace();
                 }
             }
-        }
         jList1.setModel(m);
+    }
+    
+    private void enviar(){
+        if(!jTextField3.getText().isEmpty()){
+            try {
+                String aux = c.getNombre() +" dice :"+jTextField3.getText();
+                s.publicar(aux);
+            } catch (RemoteException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+    
+    public void actualizarArea(String texto){
+        jTextArea1.setText(jTextArea1.getText()+"\n"+texto);
     }
     
     /**
